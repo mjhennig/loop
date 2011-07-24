@@ -79,6 +79,10 @@ ENVIRONMENT VARIABLES
               verbose output by default. Can be overriden with -V.
 
 
+BUGS
+       Pobably infinite.
+
+
 SEE ALSO
        clear(1), getopt(1), sh(1)
 
