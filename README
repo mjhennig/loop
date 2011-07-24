@@ -1,0 +1,91 @@
+NAME
+       loop - syntactic sugar for commandline loops
+
+
+SYNOPSIS
+       loop [-cfhrv] [-d seconds] [-i iterations] command
+
+
+DESCRIPTION
+       The  loop  utility  eases the creation of common commandline loops
+       one would  usually  build  upon  while  or  for.   It's  primarily
+       designed  to  reduce  the number of keystrokes during a shell ses‐
+       sion.
+
+
+OPTIONS
+       -c, -C Enables (-c) or disables  (-C)  clear(1)  mode,  where  the
+              screen  is  cleared every single iteration, before the com‐
+              mand is executed.
+
+       -d seconds, -D
+              Enables or disables delay mode. In this  mode,  after  each
+              execution  of  command,  the script is paused for the given
+              number of seconds.
+
+       -f, -F Enables or disables failure ignore mode. In this mode,  the
+              loop will continue even if the command exits with a failure
+              status.
+
+       -h, -H Print a short help message on STDOUT or STDERR and exit.
+
+       -i iterations, -I
+              Enables or disables iteration limit mode. In this mode, the
+              loop will be aborted after the given number of iterations -
+              unless another break condition has occured before.
+
+       -r, -R Enables or disables readline mode. In this mode,  the  loop
+              will  invoke  the  read(1)  command for every iteration and
+              export the  content  in  the  $LINE  environment  variable.
+              Execition is stopped as soon as EOF is encountered.
+
+       -v, -V Enables or disables verbose mode.
+
+
+COMMANDS
+       The  command  may be any shell command applicable. One should note
+       the common pitfalls with shell escaping, such as the fact that the
+       exported  $LINE  and $ITER variables have to be escaped and, e.g.,
+       stream redirection can get a bit tricky. The easiest  way  to  get
+       around this is usually to simply put the command in quotes.
+
+
+EXAMPLES
+       # Print "Hello World!" twice
+       loop -i 2 echo Hello World!
+
+       # Clear screen, run phpunit(1), ignore failures but do not start over
+       # until RETURN is pressed
+       loop -fc phpunit --wait --colors MyTestCase.php
+
+       # Display the source of loop(1), one line per second, enumerated
+       loop -rd 1 'echo "`printf %3d $ITER` $LINE"' < `which loop`
+
+
+ENVIRONMENT VARIABLES
+       The  loop  utility does not need any setup. However, it's possible
+       to assign a default for the most common options:
+
+       LOOP_CLEAR
+              Corresponds to the -c option; if nonempty, loop will be  in
+              clear(1) mode by default. Can be overridden with -C.
+
+       LOOP_IGNORE_FAILURES
+              Corresponds to the -f option; if nonempty, loop will ignore
+              failures by default. Can be overridden with -F.
+
+       LOOP_VERBOSE
+              Corresponds to the -v option; if nonempty, loop will create
+              verbose output by default. Can be overriden with -V.
+
+
+SEE ALSO
+       clear(1), getopt(1), sh(1)
+
+
+COPYING
+       Mathias  J. Hennig wrote this script and it's manual page. As long
+       as you retain this notice you can do whatever you want  with  this
+       stuff.  If we meet some day, and you think this stuff is worth it,
+       you can buy me a beer in return.
+
