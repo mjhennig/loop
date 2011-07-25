@@ -15,14 +15,17 @@ null=/dev/null
 ##
 # Obligatoric stuff to pretend portability
 chmod=chmod
-cp=cp
+cp=cp -r
+find=find
 echo=echo
 mkdir=mkdir -p
-rm=rm
+rm=rm -r
+tar=tar -cvzf
 test=test
 wc=wc
 which=which
 xargs=xargs
+zip=zip -r
 
 ##
 # Instead of a quirky DEFAULT_TARGET..
@@ -53,4 +56,22 @@ install: ./loop.sh ./loop.1
 uninstall:
 	$(test) -e "$(log)" && $(xargs) $(rm) < "$(log)"
 	$(test) -e "$(log)" && $(rm) "$(log)"
+
+##
+# Unofficial targets
+##
+
+loop-%.tar.gz: ./README ./Makefile ./loop.sh ./loop.1
+	$(test) -e "loop-$*" || ( $(mkdir) "loop-$*" && $(cp) $^ "loop-$*" )
+	$(tar) "loop-$*.tar.gz" "loop-$*"
+
+loop-%.zip: ./README ./Makefile ./loop.sh ./loop.1
+	$(test) -e "loop-$*" || ( $(mkdir) "loop-$*" && $(cp) $^ "loop-$*" )
+	$(zip) "loop-$*.zip" "loop-$*"
+
+clean:
+	$(find) . -type d -name 'loop-*' | $(xargs) $(rm)
+
+distclean:
+	$(rm) loop-*
 
