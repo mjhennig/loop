@@ -5,7 +5,7 @@ loop \- syntactic sugar for commandline loops
 
 .SH SYNOPSIS
 .nf
-.RI "loop [\-cfhrv] [\-d " seconds "] [\-i " iterations "] " command
+.RI "loop [\-cfhrvw] [\-d " seconds "] [\-i " iterations "] " command
 .fi
 
 .SH DESCRIPTION
@@ -44,6 +44,10 @@ loop \- syntactic sugar for commandline loops
 .TP
 .BR "\-v, \-V"
 .RB "Enables or disables verbose mode."
+.TP
+.BR "\-w, \-W"
+.RB "Enables or disables waitkey mode, where the loop is paused after each"
+.RB "iteration until the user makes a keystroke."
 
 .SH COMMANDS
 .RI "The " command " may be any shell command applicable. One should note"
@@ -80,9 +84,14 @@ loop -rd 1 'echo "`printf %3d $ITER` $LINE"' < `which loop`
 .BR LOOP_VERBOSE
 .RB "Corresponds to the " -v " option; if nonempty, " loop " will create"
 .RB "verbose output by default. Can be overriden with " -V "."
+.TP
+.BR LOOP_WAITKEY
+.RB "Corresponds to the " -w " option; if nonempty, " loop " will wait for"
+.RB "keystrokes by default. Can be overridden with " -W "."
 
 .SH BUGS
-Probably infinite.
+.RB "Probably infinite. Especially the 'wait' mode, which is currently "
+.RB "based on " dd "(1) and " stty "(1), may not be that portable."
 
 .SH SEE ALSO
 .BR clear "(1), " getopt "(1), " sh "(1)"

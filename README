@@ -3,51 +3,51 @@ NAME
 
 
 SYNOPSIS
-       loop [-cfhrv] [-d seconds] [-i iterations] command
+       loop [-cfhrvw] [-d seconds] [-i iterations] command
 
 
 DESCRIPTION
-       The  loop  utility  eases the creation of common commandline loops
-       one would  usually  build  upon  while  or  for.   It's  primarily
-       designed  to  reduce  the number of keystrokes during a shell ses‐
-       sion.
+       The  loop  utility  eases  the creation of common commandline loops one
+       would usually build upon while or  for.   It's  primarily  designed  to
+       reduce the number of keystrokes during a shell session.
 
 
 OPTIONS
-       -c, -C Enables (-c) or disables  (-C)  clear(1)  mode,  where  the
-              screen  is  cleared every single iteration, before the com‐
-              mand is executed.
+       -c, -C Enables (-c) or disables (-C) clear(1) mode, where the screen is
+              cleared every single iteration, before the command is executed.
 
        -d seconds, -D
-              Enables or disables delay mode. In this  mode,  after  each
-              execution  of  command,  the script is paused for the given
-              number of seconds.
+              Enables or disables delay mode. In this mode, after each  execu‐
+              tion  of  command,  the script is paused for the given number of
+              seconds.
 
-       -f, -F Enables or disables failure ignore mode. In this mode,  the
-              loop will continue even if the command exits with a failure
-              status.
+       -f, -F Enables or disables failure ignore mode. In this mode, the  loop
+              will continue even if the command exits with a failure status.
 
        -h, -H Print a short help message on STDOUT or STDERR and exit.
 
        -i iterations, -I
-              Enables or disables iteration limit mode. In this mode, the
-              loop will be aborted after the given number of iterations -
-              unless another break condition has occured before.
+              Enables or disables iteration limit mode. In this mode, the loop
+              will be aborted after the given number of  iterations  -  unless
+              another break condition has occured before.
 
-       -r, -R Enables or disables readline mode. In this mode,  the  loop
-              will  invoke  the  read(1)  command for every iteration and
-              export the  content  in  the  $LINE  environment  variable.
-              Execution is stopped as soon as EOF is encountered.
+       -r, -R Enables  or  disables readline mode. In this mode, the loop will
+              invoke the read(1) command for every iteration  and  export  the
+              content  in the $LINE environment variable. Execution is stopped
+              as soon as EOF is encountered.
 
        -v, -V Enables or disables verbose mode.
 
+       -w, -W Enables or disables waitkey mode, where the loop is paused after
+              each iteration until the user makes a keystroke.
+
 
 COMMANDS
-       The  command  may be any shell command applicable. One should note
-       the common pitfalls with shell escaping, such as the fact that the
-       exported  $LINE  and $ITER variables have to be escaped and, e.g.,
-       stream redirection can get a bit tricky. The easiest  way  to  get
-       around this is usually to simply put the command in quotes.
+       The  command  may  be any shell command applicable. One should note the
+       common pitfalls with shell escaping, such as the fact that the exported
+       $LINE  and  $ITER  variables have to be escaped and, e.g., stream redi‐
+       rection can get a bit tricky. The easiest way to  get  around  this  is
+       usually to simply put the command in quotes.
 
 
 EXAMPLES
@@ -63,24 +63,29 @@ EXAMPLES
 
 
 ENVIRONMENT VARIABLES
-       The  loop  utility does not need any setup. However, it's possible
-       to assign a default for the most common options:
+       The  loop  utility  does  not need any setup. However, it's possible to
+       assign a default for the most common options:
 
        LOOP_CLEAR
-              Corresponds to the -c option; if nonempty, loop will be  in
+              Corresponds to the -c option;  if  nonempty,  loop  will  be  in
               clear(1) mode by default. Can be overridden with -C.
 
        LOOP_IGNORE_FAILURES
-              Corresponds to the -f option; if nonempty, loop will ignore
+              Corresponds  to  the  -f  option;  if nonempty, loop will ignore
               failures by default. Can be overridden with -F.
 
        LOOP_VERBOSE
-              Corresponds to the -v option; if nonempty, loop will create
-              verbose output by default. Can be overriden with -V.
+              Corresponds to the -v option; if nonempty, loop will create ver‐
+              bose output by default. Can be overriden with -V.
+
+       LOOP_WAITKEY
+              Corresponds  to  the  -w option; if nonempty, loop will wait for
+              keystrokes by default. Can be overridden with -W.
 
 
 BUGS
-       Probably infinite.
+       Probably infinite. Especially the 'wait' mode, which is currently based
+       on dd(1) and stty(1), may not be that portable.
 
 
 SEE ALSO
@@ -88,8 +93,8 @@ SEE ALSO
 
 
 COPYING
-       Mathias  J. Hennig wrote this script and it's manual page. As long
-       as you retain this notice you can do whatever you want  with  this
-       stuff.  If we meet some day, and you think this stuff is worth it,
-       you can buy me a beer in return.
+       Mathias  J.  Hennig  wrote this script and it's manual page. As long as
+       you retain this notice you can do whatever you want  with  this  stuff.
+       If  we meet some day, and you think this stuff is worth it, you can buy
+       me a beer in return.
 

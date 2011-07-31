@@ -9,19 +9,23 @@
 
 ##
 # If nonempty, loop will be run in debug mode
-[ 'x' = 'x$LOOP_DEBUG' ] && LOOP_DEBUG=
+[ 'x' = "x$LOOP_DEBUG" ] && LOOP_DEBUG=
 
 ##
 # If nonempty, loop will ignore failures by default
-[ 'x' = 'x$LOOP_IGNORE_FAILURES' ] && LOOP_IGNORE_FAILURES=
+[ 'x' = "x$LOOP_IGNORE_FAILURES" ] && LOOP_IGNORE_FAILURES=
 
 ##
 # If nonempty, loop will be in verbose mode by default
-[ 'x' = 'x$LOOP_VERBOSE' ] && LOOP_VERBOSE=
+[ 'x' = "x$LOOP_VERBOSE" ] && LOOP_VERBOSE=
 
 ##
 # If nonempty, loop will clear the screen in each iteration by default
-[ 'x' = 'x$LOOP_CLEAR' ] && LOOP_CLEAR=
+[ 'x' = "x$LOOP_CLEAR" ] && LOOP_CLEAR=
+
+##
+# If nonempty, loop will wait for a keystroke after each iteration
+[ 'x' = "x$LOOP_WAITKEY" ] && LOOP_WAITKEY=
 
 ##
 # The loop_usage() function creates a usage hint in case of failure or if
@@ -37,7 +41,7 @@ loop_usage() {
         echo "$name:" "$@" > $stream
     fi
     cat > $stream <<END
-Usage:  $name [-cCfv] [-i limit] [-d secs] command
+Usage:  $name [-cCFfFhHIrRvVwW] [-i limit] [-d secs] command
         $name -h
 
 END
@@ -52,8 +56,20 @@ loop_verbose() {
 }
 
 ##
+# The command invoked in "waitkey" mode; probably not that portable yet
+loop_waitkey() {
+    stty -F/dev/tty -echo
+    if [ 'x' = "x$LOOP_DEBUG" ]; then
+        dd count=1 if=/dev/tty of=/dev/null >/dev/null 2>&1
+    else
+        dd count=1 if=/dev/tty of=/dev/null
+    fi
+    stty -F/dev/tty echo
+}
+
+##
 # Option handling, part 1
-set -- `getopt -un "\`basename $0\`" '+cCd:DfFhHi:IrRvV' "$@"`
+set -- `getopt -un "\`basename $0\`" '+cCd:DfFhHi:IrRvVwW' "$@"`
 
 ##
 # Option handling, part 2
@@ -68,14 +84,14 @@ while :; do
             ;;
 
         -d) shift
-            loop_delay=`printf "%d" "$1" `
-            if [ 0 -gt $loop_delay ]; then
+            LOOP_DELAY=`printf "%d" "$1" `
+            if [ 0 -gt $LOOP_DELAY ]; then
                 loop_usage "Invalid number of delay seconds: $1"
                 exit 1
             fi
-            loop_verbose "Delay set to $loop_delay seconds."
+            loop_verbose "Delay set to $LOOP_DELAY seconds."
             ;;
-        -D) loop_delay=
+        -D) LOOP_DELAY=
             loop_verbose 'Delay mode disabled.'
             ;;
 
@@ -90,23 +106,23 @@ while :; do
         -H) loop_usage >> /dev/stderr ; exit ;;
 
         -i) shift
-            loop_max=`printf "%d" "$1" 2>/dev/null`
-            if [ 0 -gt $loop_max ]; then
+            LOOP_MAX=`printf "%d" "$1" 2>/dev/null`
+            if [ 0 -gt $LOOP_MAX ]; then
                 loop_usage "Invalid number of iterations: $1"
                 exit 1
             fi
-            loop_verbose "Max. number of iterations: $loop_max"
+            loop_verbose "Max. number of iterations: $LOOP_MAX"
             ;;
 
-        -I) loop_max=
+        -I) LOOP_MAX=
             loop_verbose 'Iteration limit mode disabled.'
             ;;
         
-        -r) loop_read=1
+        -r) LOOP_READ=1
             loop_verbose 'Input from STDIN will be exported as $LINE.'
             ;;
 
-        -R) loop_read=
+        -R) LOOP_READ=
             loop_verbose 'Readline mode disabled.'
             ;;
 
@@ -117,6 +133,13 @@ while :; do
             loop_verbose 'Verbose mode disabled.'
             ;;
 
+        -w) LOOP_WAITKEY=1
+            loop_verbose 'Waitkey mode enabled.'
+            ;;
+        -W) LOOP_WAITKEY=
+            loop_verbose 'Waitkey mode disabled.'
+            ;;
+
         --) shift; break
             ;;
     esac
@@ -125,58 +148,69 @@ done
 
 ##
 # The main condition to stay in the loop
-if [ 'x' != "x$loop_read" ]; then
-    loop_command='read LINE'
-    loop_retval=EOF
+if [ 'x' != "x$LOOP_READ" ]; then
+    LOOP_COMMAND='read LINE'
+    LOOP_RETVAL=EOF
 else
-    loop_command=':'
+    LOOP_COMMAND=':'
 fi
 
 ##
 # The (internal) iterator to be increased for each loop, exported as $LOOP
-loop_iter=-1
+LOOP_ITER=-1
 
 ##
 # The loop itself. Note that we use eval() to execute the command, so it's
 # possible - but not recommended - to manipulate the loop variables..
-while $loop_command; do
+while IFS=\$ $LOOP_COMMAND
+do
+    LOOP_RETVAL=0
+    LOOP_ITER=`expr $LOOP_ITER + 1`
 
-    loop_retval=0
-    loop_iter=`echo "$loop_iter + 1" | bc`
-
-    if [ "x$loop_iter" = "x$loop_max" ]; then
+    if [ "x$LOOP_ITER" = "x$LOOP_MAX" ]; then
         loop_verbose 'Loop aborted due to iteraton maximum reached.'
         break
     fi
 
     [ 'x' = "x$LOOP_CLEAR" ] || clear
 
-    export ITER=$loop_iter 
+    export ITER=$LOOP_ITER 
     export LINE
 
     eval "$@"
-    loop_retval=$?
+    LOOP_RETVAL=$?
 
-    if [ 'x0' != "x$loop_retval" -a 'x' = "x$LOOP_IGNORE_FAILURES" ]; then
+    if [ 'x0' != "x$LOOP_RETVAL" -a 'x' = "x$LOOP_IGNORE_FAILURES" ]; then
         loop_verbose 'Loop aborted due to failure reported by command.'
         break
     fi
 
-    if [ ! 'x' = "x$loop_delay" ]; then
-        loop_verbose "Will now sleep for $loop_delay seconds.."
-        sleep $loop_delay
+    if [ ! 'x' = "x$LOOP_DELAY" ]; then
+        loop_verbose "Will now sleep for $LOOP_DELAY seconds.."
+        sleep $LOOP_DELAY
     fi
 
-    loop_retval=EOF
+    # "A" key might be easier to find than "ANY"
+    if [ 'x' != "x$LOOP_WAITKEY" ]; then
+        echo -n "Press a key to continue.."
+        loop_waitkey
+        echo
+    elif [ 'x' != "x$LOOP_DEBUG" ]; then
+        loop_verbose "Waiting for keystroke because of DEBUG mode!"
+        loop_waitkey
+    fi
+
+    # If not overwritten, we know the input stream has run dry
+    LOOP_RETVAL=EOF
 
 done
 
 ##
 # Over & out
-if [ 'xEOF' = "x$loop_retval" ]; then
+if [ 'xEOF' = "x$LOOP_RETVAL" ]; then
     loop_verbose 'Loop aborted due to EOF.'
     exit
 else
-    exit $loop_retval
+    exit $LOOP_RETVAL
 fi
 

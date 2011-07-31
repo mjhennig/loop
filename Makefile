@@ -6,11 +6,11 @@
 
 ##
 # Where to store the install manifest
-log=./.install_manifest
+LOGFILE=./.install_manifest
 
 ##
 # Where to find nirvana
-null=/dev/null
+NULL=/dev/null
 
 ##
 # Obligatoric stuff to pretend portability
@@ -19,7 +19,7 @@ cp=cp -r
 find=find
 echo=echo
 mkdir=mkdir -p
-rm=rm -r
+rm=rm -rf
 tar=tar -cvzf
 test=test
 wc=wc
@@ -40,22 +40,31 @@ nothing:
 all: check install
 
 check: ./loop.sh
-	$(which) bc cat getopt printf sleep test >> $(null)
+	$(which) bc cat getopt printf sleep test >> $(NULL)
 	$(chmod) +x ./loop.sh
 	$(test) x3 = "x`./loop.sh -i 3 $(echo) 'Hello World!' | $(wc) -l`"
 
-install: ./loop.sh ./loop.1
-	$(mkdir) "$$PREFIX/bin" "$$PREFIX/man/man1"
-	$(cp) ./loop.sh "$$PREFIX/bin/loop"
-	$(echo) "$$PREFIX/bin/loop" >> "$(log)"
-	$(cp) ./loop.1 $$PREFIX/man/man1/loop.1
-	$(echo) "$$PREFIX/man/man1/loop.1" >> "$(log)"
-	$(chmod) 755 "$$PREFIX/bin/loop"
-	$(chmod) 644 "$$PREFIX/man/man1/loop.1" "$(log)"
+install: $(PREFIX)/bin/loop $(PREFIX)/man/man1/loop.1
 
 uninstall:
-	$(test) -e "$(log)" && $(xargs) $(rm) < "$(log)"
-	$(test) -e "$(log)" && $(rm) "$(log)"
+	$(test) -e "$(LOGFILE)" && $(xargs) $(rm) < "$(LOGFILE)"
+	$(test) -e "$(LOGFILE)" && $(rm) "$(LOGFILE)"
+
+##
+# A target for each file to install
+##
+
+$(PREFIX)/bin/loop: ./loop.sh
+	$(mkdir) "$(PREFIX)/bin"
+	$(cp) $^ "$@"
+	$(echo) "$@" >> $(LOGFILE)
+	$(chmod) 755 "$(PREFIX)/bin/loop"
+
+$(PREFIX)/man/man1/loop.1: ./loop.1
+	$(mkdir) "$(PREFIX)/man/man1"
+	$(cp) $^ "$@"
+	$(echo) "$@" >> $(LOGFILE)
+	$(chmod) 644 "$(PREFIX)/man/man1/loop.1"
 
 ##
 # Unofficial targets
