@@ -6,81 +6,55 @@
 
 ##
 # Where to store the install manifest
-LOGFILE=./.install_manifest
+MANIFEST = ./.install_manifest
 
 ##
-# Where to find nirvana
-NULL=/dev/null
+# A path to prepend before the installation paths
+ifeq "$(PREFIX)" ""
+PREFIX = /usr/local
+endif
 
 ##
-# Obligatoric stuff to pretend portability
-chmod=chmod
-cp=cp -r
-find=find
-echo=echo
-mkdir=mkdir -p
-rm=rm -rf
-tar=tar -cvzf
-test=test
-wc=wc
-which=which
-xargs=xargs
-zip=zip -r
-
-##
-# Instead of a quirky DEFAULT_TARGET..
-nothing:
-	@$(echo) Available targets: all check install uninstall
-	@$(echo) Recommended install command: PREFIX=/usr/local make all
-
-##
-# Now the "real" targets are following:
+# Common, official targets
 ##
 
-all: check install
+test: ./loop.sh
+	which bc dd getopt printf sleep stty >> /dev/null
+	chmod +x ./loop.sh
+	test x3 = "x`./loop.sh -i 3 echo 'Hello World!' | wc -l`"
+	test "`wc -l < ./loop.sh`" = \
+		"`./loop.sh -r echo \\\$$LINE < ./loop.sh | wc -l`"
+	test ! -z "`./loop.sh -r echo \\\$$LINE < ./loop.sh`"
+	./loop.sh -f exit 1 && exit 1 || :
+	./loop.sh -d 1 -i 1 :
 
-check: ./loop.sh
-	$(which) bc cat getopt printf sleep test >> $(NULL)
-	$(chmod) +x ./loop.sh
-	$(test) x3 = "x`./loop.sh -i 3 $(echo) 'Hello World!' | $(wc) -l`"
+install:
+	mkdir -p "$(PREFIX)/bin" "$(PREFIX)/man/man1"
+	cp ./loop.sh "$(PREFIX)/bin/loop" 
+	echo "$(PREFIX)/bin/loop" > $(MANIFEST)
+	cp ./loop.1 "$(PREFIX)/man/man1/loop.1"
+	echo "$(PREFIX)/man/man1/loop.1" >> $(MANIFEST)
+	chmod +x "$(PREFIX)/bin/loop"
 
-install: $(PREFIX)/bin/loop $(PREFIX)/man/man1/loop.1
-
-uninstall:
-	$(test) -e "$(LOGFILE)" && $(xargs) $(rm) < "$(LOGFILE)"
-	$(test) -e "$(LOGFILE)" && $(rm) "$(LOGFILE)"
-
-##
-# A target for each file to install
-##
-
-$(PREFIX)/bin/loop: ./loop.sh
-	$(mkdir) "$(PREFIX)/bin"
-	$(cp) $^ "$@"
-	$(echo) "$@" >> $(LOGFILE)
-	$(chmod) 755 "$(PREFIX)/bin/loop"
-
-$(PREFIX)/man/man1/loop.1: ./loop.1
-	$(mkdir) "$(PREFIX)/man/man1"
-	$(cp) $^ "$@"
-	$(echo) "$@" >> $(LOGFILE)
-	$(chmod) 644 "$(PREFIX)/man/man1/loop.1"
+uninstall: $(MANIFEST)
+	xargs rm < $(MANIFEST)
+	rm $(MANIFEST)
 
 ##
 # Unofficial targets
 ##
 
 loop-%.tar.gz: ./README ./Makefile ./loop.sh ./loop.1
-	$(test) -e "loop-$*" || ( $(mkdir) "loop-$*" && $(cp) $^ "loop-$*" )
-	$(tar) "loop-$*.tar.gz" "loop-$*"
+	test -e "loop-$*" || ( mkdir "loop-$*" && cp $^ "loop-$*" )
+	tar -cvzf "loop-$*.tar.gz" "loop-$*"
 
 loop-%.zip: ./README ./Makefile ./loop.sh ./loop.1
-	$(test) -e "loop-$*" || ( $(mkdir) "loop-$*" && $(cp) $^ "loop-$*" )
-	$(zip) "loop-$*.zip" "loop-$*"
+	test -e "loop-$*" || ( mkdir "loop-$*" && cp $^ "loop-$*" )
+	zip -r "loop-$*.zip" "loop-$*"
 
 clean:
-	$(find) . -type d -name 'loop-*' | $(xargs) $(rm)
+	find . -type d -name 'loop-*' | xargs rm -rf
 
 distclean:
-	$(rm) loop-*
+	rm -rf loop-* $(MANIFEST)
 

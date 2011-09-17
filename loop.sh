@@ -9,23 +9,23 @@
 
 ##
 # If nonempty, loop will be run in debug mode
-[ 'x' = "x$LOOP_DEBUG" ] && LOOP_DEBUG=
+[ -z "$LOOP_DEBUG" ] && LOOP_DEBUG=
 
 ##
 # If nonempty, loop will ignore failures by default
-[ 'x' = "x$LOOP_IGNORE_FAILURES" ] && LOOP_IGNORE_FAILURES=
+[ -z "$LOOP_IGNORE_FAILURES" ] && LOOP_IGNORE_FAILURES=
 
 ##
 # If nonempty, loop will be in verbose mode by default
-[ 'x' = "x$LOOP_VERBOSE" ] && LOOP_VERBOSE=
+[ -z "$LOOP_VERBOSE" ] && LOOP_VERBOSE=
 
 ##
 # If nonempty, loop will clear the screen in each iteration by default
-[ 'x' = "x$LOOP_CLEAR" ] && LOOP_CLEAR=
+[ -z "$LOOP_CLEAR" ] && LOOP_CLEAR=
 
 ##
 # If nonempty, loop will wait for a keystroke after each iteration
-[ 'x' = "x$LOOP_WAITKEY" ] && LOOP_WAITKEY=
+[ -z "$LOOP_WAITKEY" ] && LOOP_WAITKEY=
 
 ##
 # The loop_usage() function creates a usage hint in case of failure or if
@@ -59,7 +59,7 @@ loop_verbose() {
 # The command invoked in "waitkey" mode; probably not that portable yet
 loop_waitkey() {
     stty -F/dev/tty -echo
-    if [ 'x' = "x$LOOP_DEBUG" ]; then
+    if [ -z "$LOOP_DEBUG" ]; then
         dd count=1 if=/dev/tty of=/dev/null >/dev/null 2>&1
     else
         dd count=1 if=/dev/tty of=/dev/null
@@ -117,7 +117,7 @@ while :; do
         -I) LOOP_MAX=
             loop_verbose 'Iteration limit mode disabled.'
             ;;
-        
+
         -r) LOOP_READ=1
             loop_verbose 'Input from STDIN will be exported as $LINE.'
             ;;
@@ -172,26 +172,26 @@ do
         break
     fi
 
-    [ 'x' = "x$LOOP_CLEAR" ] || clear
+    [ -z "$LOOP_CLEAR" ] || clear
 
-    export ITER=$LOOP_ITER 
+    export ITER=$LOOP_ITER
     export LINE
 
     eval "$@"
     LOOP_RETVAL=$?
 
-    if [ 'x0' != "x$LOOP_RETVAL" -a 'x' = "x$LOOP_IGNORE_FAILURES" ]; then
+    if [ 'x0' != "x$LOOP_RETVAL" -a -z "$LOOP_IGNORE_FAILURES" ]; then
         loop_verbose 'Loop aborted due to failure reported by command.'
         break
     fi
 
-    if [ ! 'x' = "x$LOOP_DELAY" ]; then
+    if [ ! -z "$LOOP_DELAY" ]; then
         loop_verbose "Will now sleep for $LOOP_DELAY seconds.."
         sleep $LOOP_DELAY
     fi
 
     # "A" key might be easier to find than "ANY"
-    if [ 'x' != "x$LOOP_WAITKEY" ]; then
+    if [ ! -z "$LOOP_WAITKEY" ]; then
         echo -n "Press a key to continue.."
         loop_waitkey
         echo
