@@ -39,7 +39,7 @@ OPTIONS
        -v, -V Enables or disables verbose mode.
 
        -w, -W Enables or disables waitkey mode, where the loop is paused after
-              each iteration until the user makes a keystroke.
+              each iteration until the RETURN key is pressed.
 
 
 COMMANDS

@@ -24,7 +24,7 @@
 [ -z "$LOOP_CLEAR" ] && LOOP_CLEAR=
 
 ##
-# If nonempty, loop will wait for a keystroke after each iteration
+# If nonempty, loop will wait for RETURN after each iteration
 [ -z "$LOOP_WAITKEY" ] && LOOP_WAITKEY=
 
 ##
