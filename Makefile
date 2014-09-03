@@ -19,7 +19,7 @@ endif
 ##
 
 test: ./loop.sh
-	which bc dd getopt printf sleep stty
+	which dd getopt printf sleep stty
 	chmod +x ./loop.sh
 	test x3 = "x`./loop.sh -i 3 echo 'Hello World!' | wc -l`"
 	test "`wc -l < ./loop.sh`" = \
