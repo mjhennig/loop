@@ -192,7 +192,7 @@ do
 
     # "A" key might be easier to find than "ANY"
     if [ ! -z "$LOOP_WAITKEY" ]; then
-        echo -n "Press a key to continue.."
+        echo -n "Press RETURN to continue.."
         loop_waitkey
         echo
     elif [ 'x' != "x$LOOP_DEBUG" ]; then
